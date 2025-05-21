@@ -13,13 +13,16 @@ if sellingCards_csv and expansion_csv:
     expansion_to_kiste = pd.Series(df_Expansion.Kiste.values, index=df_Expansion.Expansion).to_dict()
     
     sellingCardsExpansion = df_Cards["Expansion"]
-    sellingCardsName = df_Cards["Name"]
+    sellingCardsName = df_Cards["Localized Article Name"]
 
     st.title("Resultat:")
 
     for i in range(len(sellingCardsExpansion)):
-        st.write("Du findest die Karte ", sellingCardsName[i], " aus der Expansion: ", sellingCardsExpansion[i] ," in der Kiste:", expansion_to_kiste.get(sellingCardsExpansion[i]))
-        st.checkbox("Karte gefunden",key=f"checkbox_{i}")
+        if sellingCardsExpansion[i] in expansion_to_kiste:
+           st.write("Die Karte ", sellingCardsName[i], " aus der Expansion: ", sellingCardsExpansion[i] ," befindet sich in der Box:", expansion_to_kiste.get(sellingCardsExpansion[i]))
+           st.checkbox("Karte gefunden",key=f"checkbox_{i}")
+        else:
+            st.markdown(f"<span style='color:red'>Fehler: Expansion: <strong>{sellingCardsExpansion[i]}</strong> nicht gefunden, Karte: <strong>{sellingCardsName[i]}</strong></span>", unsafe_allow_html=True)
 
 
 
