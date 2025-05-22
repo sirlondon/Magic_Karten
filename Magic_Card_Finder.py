@@ -4,7 +4,7 @@ import pandas as pd
 st.title("Magic Karten Finder")
 
 def get_CarNumber(cardNumber):
-    if cardNumber.startswith("T"):
+    if str(cardNumber)[0].isalpha():
         return 0
     else:
         return int(cardNumber)
@@ -29,8 +29,8 @@ expansion_csv = st.file_uploader("Expansion- und Kistenliste hochladen", type="c
 sellingCards_csv = st.file_uploader("Gesuchte Karten hochladen", type="csv")
 
 if sellingCards_csv and expansion_csv:
-    df_Cards = pd.read_csv(sellingCards_csv)
-    df_Expansion = pd.read_csv(expansion_csv)    
+    df_Cards = pd.read_csv(sellingCards_csv, sep=";", encoding="utf-8")
+    df_Expansion = pd.read_csv(expansion_csv, sep=";", encoding="utf-8")    
     
     df_Expansion["Key"] = df_Expansion["Expansion"] + "|" + df_Expansion["Language"]
     expansion_to_kiste = dict(zip(df_Expansion["Key"], df_Expansion["Kiste"]))   
