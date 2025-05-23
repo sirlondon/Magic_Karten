@@ -9,21 +9,32 @@ def get_CarNumber(cardNumber):
     else:
         return int(cardNumber)
 
-def get_Schlitten(df_Expansion, kiste, cardNumber):
+def get_Schlitten(df_Expansion, cardNumber, possibleList):
     schlitteVon = df_Expansion["Karten Nummer Von"]   
     schlitteBis = df_Expansion["Karten Nummer Bis"]
     schlitten = df_Expansion["Schlitten"]   
     kisten = df_Expansion["Kiste"]   
-  
-    for i in range(len(kisten)):
-        if kiste == kisten[i]:
-            cardNumberInt = get_CarNumber(cardNumber)
 
-            if cardNumberInt >= int(schlitteVon[i]) and cardNumberInt <= int(schlitteBis[i]):
-               return schlitten[i] 
+    for i in range(len(possibleList)):
+        cardNumberInt = get_CarNumber(cardNumber)
+
+        if cardNumberInt >= int(schlitteVon[possibleList[i]]) and cardNumberInt <= int(schlitteBis[possibleList[i]]):
+               return schlitten[possibleList[i]], kisten[possibleList[i]]
             
-    st.markdown(f"<span style='color:red'>Fehler: Keine Spalte in der Kiste <strong>{kiste}</strong> für Karten Nummer: <strong>{cardNumber}</strong> gefunden </span>", unsafe_allow_html=True)
+    #st.markdown(f"<span style='color:red'>Fehler: Keine Spalte in der Kiste <strong>{possibleList}</strong> für Karten Nummer: <strong>{cardNumber}</strong> gefunden </span>", unsafe_allow_html=True)
+    return -1,-1
 
+def get_List(df_Expansion, sellingCardsExpansion, sellingCardsLanguage):
+    expansion = df_Expansion["Expansion"]
+    language = df_Expansion["Language"]
+    
+    returnList = []
+
+    for i in range(len(expansion)):
+        if (expansion[i] == sellingCardsExpansion and sellingCardsLanguage == language[i]):
+            returnList.insert(1, i) 
+    
+    return returnList
 
 expansion_csv = st.file_uploader("Expansion- und Kistenliste hochladen", type="csv")
 sellingCards_csv = st.file_uploader("Gesuchte Karten hochladen", type="csv")
@@ -41,14 +52,20 @@ if sellingCards_csv and expansion_csv:
     collectorsNumber = df_Cards["Collector Number"]
 
     st.title("Resultat:")
-
+  
     for i in range(len(sellingCardsExpansion)):
-        key = f"{sellingCardsExpansion[i]}|{sellingCardsLanguage[i]}"
-        if key in expansion_to_kiste:
-           st.write("Die Karte ", sellingCardsName[i], " in der Sprache: ",sellingCardsLanguage[i] ," aus der Expansion: ", sellingCardsExpansion[i] ," befindet sich in der Box:", expansion_to_kiste.get(key), " in der Kistenspalte: ", get_Schlitten(df_Expansion,expansion_to_kiste.get(key),collectorsNumber[i]))
-           st.checkbox("Karte gefunden",key=f"checkbox_{i}")
+        possibleExpansionList = get_List(df_Expansion, sellingCardsExpansion[i], sellingCardsLanguage[i])
+        
+        if len(possibleExpansionList) > 0:
+           schlitte = -1
+           kiste = -1
+           schlitte, kiste =  get_Schlitten(df_Expansion, collectorsNumber[i], possibleExpansionList)
+
+           if(schlitte != -1 and kiste != -1):
+              st.write("Die Karte ", sellingCardsName[i], " in der Sprache: ",sellingCardsLanguage[i] ," aus der Expansion: ", sellingCardsExpansion[i] ," befindet sich in der Box:", kiste, " in der Kistenspalte: ",schlitte)
+              st.checkbox("Karte gefunden",key=f"checkbox_{i}")
         else:
-            st.markdown(f"<span style='color:red'>Fehler: Expansion: <strong>{sellingCardsExpansion[i]}</strong> in <strong>{sellingCardsLanguage[i]} nicht gefunden, Karte: <strong>{sellingCardsName[i]}</strong></span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='color:red'>Fehler: Expansion: <strong>{sellingCardsExpansion[i]}</strong> in <strong>{sellingCardsLanguage[i]} nicht gefunden, Karte: <strong>{sellingCardsName[i]}</strong> Nummer: <strong>{collectorsNumber[i]}</strong></span>", unsafe_allow_html=True)
 
 
 
