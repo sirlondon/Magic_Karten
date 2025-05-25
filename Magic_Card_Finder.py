@@ -33,16 +33,15 @@ def get_List(df_Expansion, sellingCardsExpansion, sellingCardsLanguage, sellingC
    
     condition = df_Expansion["Condition"]
 
-    if(language == "English"):
+    if(language == "english"):
         expansion = df_Expansion["Expansion"]
         languageDF = df_Expansion["Language"]
     else:
         expansion = df_Expansion["Expansion deutsch"]
         languageDF = df_Expansion["Language deutsch"]
 
-    returnList = []
-
-
+    returnList = [] 
+  
     for i in range(len(expansion)):
         if(sellingCardConditon == "NM"):
             if (expansion[i] == sellingCardsExpansion and sellingCardsLanguage == languageDF[i]):
