@@ -22,7 +22,7 @@ def get_AllCardsInKisteAndSchlitteWithBestellung(kiste, schlitte, df_Results, be
     returnList = []
 
     for i in range(len(kistenResults)):
-        if(kistenResults[i] == kiste and schlittenResults[i] == schlitte and bestellungen[i] == bestellung):
+        if(kistenResults[i] ==kiste and schlittenResults[i] == schlitte and bestellungen[i] == bestellung):
             returnList.insert(1, i)
 
     return returnList
@@ -64,6 +64,7 @@ def get_CarNumber(cardNumber):
 def get_KisteFromPossibleList(df_Expansion,possibleList):
     kisten = df_Expansion["Kiste"]   
 
+    st.write(possibleList)
     returnList = []
 
     for i in range(len(possibleList)):
@@ -94,7 +95,7 @@ def get_Schlitten(df_Expansion, cardNumber, cardName, cardCondition, possibleLis
         cardNumberInt = get_CarNumber(cardNumber)
         
         if(cardNumberInt == -1):
-            add_Hinweis(f"Die Karte <strong>{cardName}</strong> hat keine KartenNummer: <strong>{cardNumber}</strong> mögliche Boxen: <strong>{get_KisteFromPossibleList(df_Expansion,possibleList)}</strong> Schlitten: <strong>{get_SchlittenFromPossibleList(df_Expansion,possibleList)}</strong>", "H1")
+            add_Hinweis(f"Die Karte <strong>{cardName}</strong> hat keine Kartennummer: <strong>{cardNumber}</strong> mögliche Boxen: <strong>{get_KisteFromPossibleList(df_Expansion,possibleList)}</strong> Schlitten: <strong>{get_SchlittenFromPossibleList(df_Expansion,possibleList)}</strong>", "H1")
             hinweis = True
             return -1,-1,hinweis
 
@@ -221,17 +222,23 @@ if sellingCards_csv and expansion_csv:
 
     gefundene_KistenSchlitten = df_Cards[["Kiste", "Schlitte"]].drop_duplicates()
     gefundene_KistenSchlitten = gefundene_KistenSchlitten[(gefundene_KistenSchlitten["Kiste"] != "") & (gefundene_KistenSchlitten["Schlitte"] != "")] 
-    gefundene_KistenSchlitten = gefundene_KistenSchlitten.sort_values(by="Kiste")
-    
+    gefundene_KistenSchlitten = gefundene_KistenSchlitten.sort_values(by=["Kiste", "Schlitte"])
+
+    st.write(gefundene_KistenSchlitten)
+
     for i in bestellungen[spaltenname]:
         st.title(f"Bestellung: {i}")
-        for kiste, schlitte in zip(gefundene_KistenSchlitten["Kiste"], gefundene_KistenSchlitten["Schlitte"]):
+        
+        for _, row in gefundene_KistenSchlitten.iterrows():
+            kiste = row["Kiste"]
+            schlitte = row["Schlitte"]          
+
             temp_df = pd.DataFrame(columns=df_Cards.columns) 
 
             listKistenSchlitten = get_AllCardsInKisteAndSchlitteWithBestellung(kiste,schlitte,df_Cards,i)
-            
-            for i in listKistenSchlitten:
-                zeile = df_Cards.iloc[int(i)]
+
+            for a in listKistenSchlitten:
+                zeile = df_Cards.iloc[int(a)]
                 temp_df = pd.concat([temp_df, zeile.to_frame().T], ignore_index=True)
             
             if(len(listKistenSchlitten) > 0):
