@@ -4,6 +4,8 @@ from enum import Enum
 
 st.set_page_config(page_title="Magic Karten Finder", layout="wide")
 
+st.markdown(f"<span style='color:red; font-size:30px;'>  Wichtig in Expansion Excel Kiste zu Box und Schlitten zu Spalte umbenennen</span>", unsafe_allow_html=True)
+
 st.title("Magic Karten Finder")
 
 class Language(Enum):
@@ -11,6 +13,23 @@ class Language(Enum):
     deutsch = 2
 
 currentLanguage = Language.englisch
+
+def get_CardForOrderWithErrorMessage(df_Results, bestellung):
+
+    if(currentLanguage == Language.deutsch):
+        bestellungen = df_Results["Magic the Gathering Einzelkarten"]
+    else:
+        bestellungen = df_Results["Magic the Gathering Singles"]
+
+    fehler = df_Results["Fehlermeldung"]
+
+    returnList = []
+
+    for i in range(len(bestellungen)):
+        if(bestellung == bestellungen[i] and fehler[i] != "-"):
+            returnList.insert(1, i)
+
+    return returnList
 
 def get_AllCardsFromBestellung(df_Results, bestellung):
 
@@ -27,15 +46,15 @@ def get_AllCardsFromBestellung(df_Results, bestellung):
 
     return returnList
 
-def get_AllCardsInKisteAndSchlitten(kiste, schlitte, df_Results):
-    schlittenResults = df_Results["Schlitten"]   
-    kistenResults = df_Results["Kiste"]   
+def get_AllCardsInBoxAndSpalten(box, spalte, df_Results):
+    spaltenResults = df_Results["Spalte"]   
+    boxResults = df_Results["Box"]   
 
     returnList = []
 
-    for i in range(len(kistenResults)):
-        if kistenResults[i] != "" and kiste != "":
-            if(int(kistenResults[i])==int(kiste) and schlittenResults[i] == schlitte):
+    for i in range(len(boxResults)):
+        if boxResults[i] != "" and box != "":
+            if(int(boxResults[i])==int(box) and spaltenResults[i] == spalte):
                 returnList.insert(1, i)
 
     return returnList
@@ -74,32 +93,32 @@ def get_CarNumber(cardNumber):
     else:
         return int(cardNumber)
 
-def get_KisteFromPossibleList(df_Expansion,possibleList):
-    kisten = df_Expansion["Kiste"]   
+def get_BoxFromPossibleList(df_Expansion,possibleList):
+    box = df_Expansion["Box"]   
 
     st.write(possibleList)
     returnList = []
 
     for i in range(len(possibleList)):
-        returnList.insert(1, kisten[possibleList[i]]) 
+        returnList.insert(1, box[possibleList[i]]) 
 
     return returnList
 
-def get_SchlittenFromPossibleList(df_Expansion,possibleList):
-    schlitten = df_Expansion["Schlitten"]   
+def get_SpaltenFromPossibleList(df_Expansion,possibleList):
+    spalten = df_Expansion["Spalte"]   
 
     returnList = []
 
     for i in range(len(possibleList)):
-        returnList.insert(1, schlitten[possibleList[i]]) 
+        returnList.insert(1, spalten[possibleList[i]]) 
 
     return returnList
 
-def get_Schlitten(df_Expansion, cardNumber, cardName, cardCondition, possibleList):
-    schlitteVon = df_Expansion["Karten Nummer Von"]   
-    schlitteBis = df_Expansion["Karten Nummer Bis"]
-    schlitten = df_Expansion["Schlitten"]   
-    kisten = df_Expansion["Kiste"]   
+def get_Spalten(df_Expansion, cardNumber, cardName, cardCondition, possibleList):
+    spalteVon = df_Expansion["Karten Nummer Von"]   
+    spalteBis = df_Expansion["Karten Nummer Bis"]
+    spalten = df_Expansion["Spalte"]   
+    box = df_Expansion["Box"]   
     condition = df_Expansion["Condition"]
     
     hinweis = False
@@ -108,18 +127,18 @@ def get_Schlitten(df_Expansion, cardNumber, cardName, cardCondition, possibleLis
         cardNumberInt = get_CarNumber(cardNumber)
         
         if(cardNumberInt == -1):
-            add_Hinweis(f"Die Karte <strong>{cardName}</strong> hat keine Kartennummer: <strong>{cardNumber}</strong> mögliche Boxen: <strong>{get_KisteFromPossibleList(df_Expansion,possibleList)}</strong> Schlitten: <strong>{get_SchlittenFromPossibleList(df_Expansion,possibleList)}</strong>", "H1")
+            add_Hinweis(f"Die Karte <strong>{cardName}</strong> hat keine Kartennummer: <strong>{cardNumber}</strong> mögliche Boxen: <strong>{get_BoxFromPossibleList(df_Expansion,possibleList)}</strong> Spalte: <strong>{get_SpaltenFromPossibleList(df_Expansion,possibleList)}</strong>", "H1")
             hinweis = True
             return -1,-1,hinweis
 
         if pd.isna(condition.iloc[possibleList[i]]) or condition.iloc[possibleList[i]] == "":
-            if (cardNumberInt >= int(schlitteVon[possibleList[i]]) and cardNumberInt <= int(schlitteBis[possibleList[i]])):
-                return schlitten[possibleList[i]], kisten[possibleList[i]], hinweis
+            if (cardNumberInt >= int(spalteVon[possibleList[i]]) and cardNumberInt <= int(spalteBis[possibleList[i]])):
+                return spalten[possibleList[i]], box[possibleList[i]], hinweis
         else:
              if (condition[possibleList[i]] == cardCondition):
-                return schlitten[possibleList[i]], kisten[possibleList[i]], hinweis
+                return spalten[possibleList[i]], box[possibleList[i]], hinweis
    
-    add_Hinweis(f"Keine genaue Kiste oder Schlitten konnte für die Karte <strong>{cardName}</strong> mit der Nummer: <strong>{cardNumber}</strong> gefunden werden mögliche Boxen: <strong>{get_KisteFromPossibleList(df_Expansion,possibleList)}</strong> Schlitten: <strong>{get_SchlittenFromPossibleList(df_Expansion,possibleList)}</strong>", "H2")     
+    add_Hinweis(f"Keine genaue Box oder Spalte konnte für die Karte <strong>{cardName}</strong> mit der Nummer: <strong>{cardNumber}</strong> gefunden werden mögliche Boxen: <strong>{get_BoxFromPossibleList(df_Expansion,possibleList)}</strong> Spalte: <strong>{get_SpaltenFromPossibleList(df_Expansion,possibleList)}</strong>", "H2")     
     hinweis = True
     return -1,-1, hinweis
 
@@ -166,7 +185,7 @@ def get_List(df_Expansion, sellingCardsExpansion, sellingCardsLanguage, sellingC
  
     return returnList, fehler
 
-expansion_csv = st.file_uploader("Expansion- und Kistenliste hochladen", type="csv")
+expansion_csv = st.file_uploader("Expansion- und Boxenliste hochladen", type="csv")
 sellingCards_csv = st.file_uploader("Gesuchte Karten hochladen", type="csv")
 
 if sellingCards_csv and expansion_csv:
@@ -176,8 +195,8 @@ if sellingCards_csv and expansion_csv:
     if( "Magic the Gathering Einzelkarten" == df_Cards.columns[0]):
         currentLanguage =  Language.deutsch
     
-    df_Cards["Kiste"] = ""
-    df_Cards["Schlitten"] = ""
+    df_Cards["Box"] = ""
+    df_Cards["Spalte"] = ""
     df_Cards["Fehlermeldung"] = "-"
     df_Cards["Hinweis"] = "-"
 
@@ -185,8 +204,8 @@ if sellingCards_csv and expansion_csv:
     sellingCardsExpansion = df_Cards["Expansion"]
     sellingCardsCondtion = df_Cards["Condition"]
 
-    sellingCardsKiste = df_Cards["Kiste"]
-    sellingCardsSchlitte = df_Cards["Schlitten"]
+    sellingCardsBox = df_Cards["Box"]
+    sellingCardsSpalte= df_Cards["Spalte"]
     sellingCardsFehlermeldung = df_Cards["Fehlermeldung"]
     sellingCardsHinweis = df_Cards["Hinweis"]
 
@@ -203,14 +222,14 @@ if sellingCards_csv and expansion_csv:
             sellingCardsFehlermeldung[i] = fehlerCount
 
         if len(possibleExpansionList) > 0:
-            schlitte, kiste, hinweis =  get_Schlitten(df_Expansion, sellingCardsCollectorsNumber[i], sellingCardsName[i],sellingCardsCondtion[i], possibleExpansionList)
+            spalte, box, hinweis =  get_Spalten(df_Expansion, sellingCardsCollectorsNumber[i], sellingCardsName[i],sellingCardsCondtion[i], possibleExpansionList)
            
             if(hinweis):
                sellingCardsHinweis[i] = hinweisCount
            
-            if(schlitte != -1 and kiste != -1):
-                sellingCardsKiste[i] = kiste
-                sellingCardsSchlitte[i] = schlitte
+            if(spalte != -1 and box != -1):
+                sellingCardsBox[i] = box
+                sellingCardsSpalte[i] = spalte
      
     st.title("Resultat:")
     st.write(df_Cards)
@@ -225,46 +244,54 @@ if sellingCards_csv and expansion_csv:
     )
     
     if(currentLanguage == Language.deutsch):
-        bestellungen = df_Cards[["Magic the Gathering Einzelkarten"]].drop_duplicates()
+        bestellungen = df_Cards["Magic the Gathering Einzelkarten"].drop_duplicates()
         spaltenname = "Magic the Gathering Einzelkarten"
     else:
-        bestellungen = df_Cards[["Magic the Gathering Singles"]].drop_duplicates()
+        bestellungen = df_Cards["Magic the Gathering Singles"].drop_duplicates()
         spaltenname = "Magic the Gathering Singles"
+    
+    bestellungen = bestellungen.sort_values()
 
-    bestellungen = bestellungen.sort_values(by=spaltenname)
+    orderID = df_Cards["Order ID"].drop_duplicates()
+    orderID = orderID.sort_values()
 
-    gefundene_KistenSchlitten = df_Cards[["Kiste", "Schlitten"]].drop_duplicates()
-    gefundene_KistenSchlitten = gefundene_KistenSchlitten[(gefundene_KistenSchlitten["Kiste"] != "") & (gefundene_KistenSchlitten["Schlitten"] != "")] 
+    gefundene_BoxSpalte = df_Cards[["Box", "Spalte"]].drop_duplicates()
+    gefundene_BoxSpalte = gefundene_BoxSpalte[(gefundene_BoxSpalte["Box"] != "") & (gefundene_BoxSpalte["Spalte"] != "")] 
 
-    gefundene_KistenSchlitten["Kiste"] = pd.to_numeric(gefundene_KistenSchlitten["Kiste"], errors="coerce")
-    gefundene_KistenSchlitten["Schlitten"] = pd.to_numeric(gefundene_KistenSchlitten["Schlitten"], errors="coerce")
-    gefundene_KistenSchlitten = gefundene_KistenSchlitten.sort_values(by=["Kiste"], ascending=True)
+    gefundene_BoxSpalte["Box"] = pd.to_numeric(gefundene_BoxSpalte["Box"], errors="coerce")
+    gefundene_BoxSpalte["Spalte"] = pd.to_numeric(gefundene_BoxSpalte["Spalte"], errors="coerce")
+    gefundene_BoxSpalte = gefundene_BoxSpalte.sort_values(by=["Box"], ascending=True)
 
-    for _, row in gefundene_KistenSchlitten.iterrows():
-        kiste = row["Kiste"]
-        schlitte = row["Schlitten"]          
+    for _, row in gefundene_BoxSpalte.iterrows():
+        box = row["Box"]
+        spalte = row["Spalte"]          
 
         temp_df = pd.DataFrame(columns=df_Cards.columns) 
         
-        listKistenSchlitten = get_AllCardsInKisteAndSchlitten(kiste,schlitte,df_Cards)
+        listBoxSpalte = get_AllCardsInBoxAndSpalten(box,spalte,df_Cards)
 
-        for a in listKistenSchlitten:
+        for a in listBoxSpalte:
             zeile = df_Cards.iloc[int(a)]
             temp_df = pd.concat([temp_df, zeile.to_frame().T], ignore_index=True)
             
-        if(len(listKistenSchlitten) > 0):
-            st.write(f"Kiste: {kiste}  Schlitten: {schlitte}")
+        if(len(listBoxSpalte) > 0):
+          
+            st.markdown(f"<span style='font-size:30px;'>Box: {int(box)} - {int(spalte)}</span>", unsafe_allow_html=True)
+
             temp_df = temp_df.drop(temp_df.columns[6], axis=1)
             temp_df = temp_df.drop(temp_df.columns[3], axis=1)
             temp_df = temp_df.drop("Product ID", axis=1)
             temp_df = temp_df.drop("Comments", axis=1)
             temp_df = temp_df.drop("Order ID", axis=1)
             temp_df = temp_df.drop("Rarity", axis=1)
-            temp_df = temp_df.drop("Collector Number", axis=1)
-            temp_df = temp_df.drop("Kiste", axis=1)
-            temp_df = temp_df.drop("Schlitten", axis=1)
+            temp_df = temp_df.drop("Box", axis=1)
+            temp_df = temp_df.drop("Spalte", axis=1)
             temp_df = temp_df.drop("Fehlermeldung", axis=1)
             temp_df = temp_df.drop("Hinweis", axis=1)
+
+            spalte = temp_df.pop("Collector Number")
+         
+            temp_df.insert(1,"Collector Number",spalte)
 
             spalte = temp_df.pop(temp_df.columns[0])
 
@@ -277,18 +304,25 @@ if sellingCards_csv and expansion_csv:
             temp_df = temp_df.rename(columns={"-": "Stückzahl"})
 
             st.write(temp_df)
- 
     
-    for i in bestellungen[spaltenname]:
-        st.title(f"Bestellung {i}")
-        for _, row in gefundene_KistenSchlitten.iterrows():
+    st.title("Bestellungen:")
+
+    for i in range(len(bestellungen)):
+     
+        bestellungsID = bestellungen.iloc[i]
+      
+        order = orderID.iloc[i] 
+
+        st.markdown(f"<span style='font-size:35px;'>Bestellung {bestellungsID} #{int(order):,}</span>", unsafe_allow_html=True)
+
+        for _, row in gefundene_BoxSpalte.iterrows():
             temp_df = pd.DataFrame(columns=df_Cards.columns) 
-            bestellungList = get_AllCardsFromBestellung(df_Cards, i)
+            bestellungList = get_AllCardsFromBestellung(df_Cards, bestellungsID)
             
             for a in bestellungList:
                 zeile = df_Cards.iloc[int(a)]
                 temp_df = pd.concat([temp_df, zeile.to_frame().T], ignore_index=True)
-            
+       
         if(len(bestellungList) > 0):
             temp_df = temp_df.drop(temp_df.columns[6], axis=1)
             temp_df = temp_df.drop(temp_df.columns[3], axis=1)
@@ -297,9 +331,8 @@ if sellingCards_csv and expansion_csv:
             temp_df = temp_df.drop("Order ID", axis=1)
             temp_df = temp_df.drop("Rarity", axis=1)
             temp_df = temp_df.drop("Collector Number", axis=1)
-            temp_df = temp_df.drop("Kiste", axis=1)
-            temp_df = temp_df.drop("Schlitten", axis=1)
-            temp_df = temp_df.drop("Fehlermeldung", axis=1)
+            temp_df = temp_df.drop("Box", axis=1)
+            temp_df = temp_df.drop("Spalte", axis=1)
             temp_df = temp_df.drop("Hinweis", axis=1)
             temp_df = temp_df.drop(temp_df.columns[0], axis=1)
 
