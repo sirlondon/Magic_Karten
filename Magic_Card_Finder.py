@@ -34,8 +34,9 @@ def get_AllCardsInKisteAndSchlitten(kiste, schlitte, df_Results):
     returnList = []
 
     for i in range(len(kistenResults)):
-        if(kistenResults[i] ==kiste and schlittenResults[i] == schlitte):
-            returnList.insert(1, i)
+        if kistenResults[i] != "" and kiste != "":
+            if(int(kistenResults[i])==int(kiste) and schlittenResults[i] == schlitte):
+                returnList.insert(1, i)
 
     return returnList
 
@@ -234,14 +235,17 @@ if sellingCards_csv and expansion_csv:
 
     gefundene_KistenSchlitten = df_Cards[["Kiste", "Schlitten"]].drop_duplicates()
     gefundene_KistenSchlitten = gefundene_KistenSchlitten[(gefundene_KistenSchlitten["Kiste"] != "") & (gefundene_KistenSchlitten["Schlitten"] != "")] 
-    gefundene_KistenSchlitten = gefundene_KistenSchlitten.sort_values(by=["Kiste", "Schlitten"])
+
+    gefundene_KistenSchlitten["Kiste"] = pd.to_numeric(gefundene_KistenSchlitten["Kiste"], errors="coerce")
+    gefundene_KistenSchlitten["Schlitten"] = pd.to_numeric(gefundene_KistenSchlitten["Schlitten"], errors="coerce")
+    gefundene_KistenSchlitten = gefundene_KistenSchlitten.sort_values(by=["Kiste"], ascending=True)
 
     for _, row in gefundene_KistenSchlitten.iterrows():
         kiste = row["Kiste"]
         schlitte = row["Schlitten"]          
 
         temp_df = pd.DataFrame(columns=df_Cards.columns) 
-
+        
         listKistenSchlitten = get_AllCardsInKisteAndSchlitten(kiste,schlitte,df_Cards)
 
         for a in listKistenSchlitten:
@@ -250,6 +254,28 @@ if sellingCards_csv and expansion_csv:
             
         if(len(listKistenSchlitten) > 0):
             st.write(f"Kiste: {kiste}  Schlitten: {schlitte}")
+            temp_df = temp_df.drop(temp_df.columns[6], axis=1)
+            temp_df = temp_df.drop(temp_df.columns[3], axis=1)
+            temp_df = temp_df.drop("Product ID", axis=1)
+            temp_df = temp_df.drop("Comments", axis=1)
+            temp_df = temp_df.drop("Order ID", axis=1)
+            temp_df = temp_df.drop("Rarity", axis=1)
+            temp_df = temp_df.drop("Collector Number", axis=1)
+            temp_df = temp_df.drop("Kiste", axis=1)
+            temp_df = temp_df.drop("Schlitten", axis=1)
+            temp_df = temp_df.drop("Fehlermeldung", axis=1)
+            temp_df = temp_df.drop("Hinweis", axis=1)
+
+            spalte = temp_df.pop(temp_df.columns[0])
+
+            temp_df["Bestellung"] = spalte
+
+            spalte = temp_df.pop("Expansion")
+
+            temp_df.insert(0,"Expansion",spalte)
+
+            temp_df = temp_df.rename(columns={"-": "Stückzahl"})
+
             st.write(temp_df)
  
     
@@ -264,7 +290,26 @@ if sellingCards_csv and expansion_csv:
                 temp_df = pd.concat([temp_df, zeile.to_frame().T], ignore_index=True)
             
         if(len(bestellungList) > 0):
-           st.write(temp_df)
+            temp_df = temp_df.drop(temp_df.columns[6], axis=1)
+            temp_df = temp_df.drop(temp_df.columns[3], axis=1)
+            temp_df = temp_df.drop("Product ID", axis=1)
+            temp_df = temp_df.drop("Comments", axis=1)
+            temp_df = temp_df.drop("Order ID", axis=1)
+            temp_df = temp_df.drop("Rarity", axis=1)
+            temp_df = temp_df.drop("Collector Number", axis=1)
+            temp_df = temp_df.drop("Kiste", axis=1)
+            temp_df = temp_df.drop("Schlitten", axis=1)
+            temp_df = temp_df.drop("Fehlermeldung", axis=1)
+            temp_df = temp_df.drop("Hinweis", axis=1)
+            temp_df = temp_df.drop(temp_df.columns[0], axis=1)
+
+            spalte = temp_df.pop("Expansion")
+
+            temp_df.insert(0,"Expansion",spalte)
+
+            temp_df = temp_df.rename(columns={"-": "Stückzahl"})
+
+            st.write(temp_df)
 
 
 #streamlit run Magic_Card_Finder.py
