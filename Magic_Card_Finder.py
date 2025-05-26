@@ -3,6 +3,7 @@ import pandas as pd
 from enum import Enum
 
 st.title("Magic Karten Finder")
+st.set_page_config(page_title="Magic Karten Finder", layout="wide")
 
 class Language(Enum):
     englisch = 1
@@ -10,9 +11,7 @@ class Language(Enum):
 
 currentLanguage = Language.englisch
 
-def get_AllCardsInKisteAndSchlitteWithBestellung(kiste, schlitte, df_Results, bestellung):
-    schlittenResults = df_Results["Schlitte"]   
-    kistenResults = df_Results["Kiste"]   
+def get_AllCardsFromBestellung(df_Results, bestellung):
 
     if(currentLanguage == Language.deutsch):
         bestellungen = df_Results["Magic the Gathering Einzelkarten"]
@@ -21,8 +20,20 @@ def get_AllCardsInKisteAndSchlitteWithBestellung(kiste, schlitte, df_Results, be
 
     returnList = []
 
+    for i in range(len(bestellungen)):
+        if(bestellung == bestellungen[i]):
+            returnList.insert(1, i)
+
+    return returnList
+
+def get_AllCardsInKisteAndSchlitten(kiste, schlitte, df_Results):
+    schlittenResults = df_Results["Schlitten"]   
+    kistenResults = df_Results["Kiste"]   
+
+    returnList = []
+
     for i in range(len(kistenResults)):
-        if(kistenResults[i] ==kiste and schlittenResults[i] == schlitte and bestellungen[i] == bestellung):
+        if(kistenResults[i] ==kiste and schlittenResults[i] == schlitte):
             returnList.insert(1, i)
 
     return returnList
@@ -106,7 +117,7 @@ def get_Schlitten(df_Expansion, cardNumber, cardName, cardCondition, possibleLis
              if (condition[possibleList[i]] == cardCondition):
                 return schlitten[possibleList[i]], kisten[possibleList[i]], hinweis
    
-    add_Hinweis(f"Keine genaue Kiste oder Spalte konnte für die Karte <strong>{cardName}</strong> mit der Nummer: <strong>{cardNumber}</strong> gefunden werden mögliche Boxen: <strong>{get_KisteFromPossibleList(df_Expansion,possibleList)}</strong> Schlitten: <strong>{get_SchlittenFromPossibleList(df_Expansion,possibleList)}</strong>", "H2")     
+    add_Hinweis(f"Keine genaue Kiste oder Schlitten konnte für die Karte <strong>{cardName}</strong> mit der Nummer: <strong>{cardNumber}</strong> gefunden werden mögliche Boxen: <strong>{get_KisteFromPossibleList(df_Expansion,possibleList)}</strong> Schlitten: <strong>{get_SchlittenFromPossibleList(df_Expansion,possibleList)}</strong>", "H2")     
     hinweis = True
     return -1,-1, hinweis
 
@@ -164,7 +175,7 @@ if sellingCards_csv and expansion_csv:
         currentLanguage =  Language.deutsch
     
     df_Cards["Kiste"] = ""
-    df_Cards["Schlitte"] = ""
+    df_Cards["Schlitten"] = ""
     df_Cards["Fehlermeldung"] = "-"
     df_Cards["Hinweis"] = "-"
 
@@ -173,7 +184,7 @@ if sellingCards_csv and expansion_csv:
     sellingCardsCondtion = df_Cards["Condition"]
 
     sellingCardsKiste = df_Cards["Kiste"]
-    sellingCardsSchlitte = df_Cards["Schlitte"]
+    sellingCardsSchlitte = df_Cards["Schlitten"]
     sellingCardsFehlermeldung = df_Cards["Fehlermeldung"]
     sellingCardsHinweis = df_Cards["Hinweis"]
 
@@ -220,33 +231,40 @@ if sellingCards_csv and expansion_csv:
 
     bestellungen = bestellungen.sort_values(by=spaltenname)
 
-    gefundene_KistenSchlitten = df_Cards[["Kiste", "Schlitte"]].drop_duplicates()
-    gefundene_KistenSchlitten = gefundene_KistenSchlitten[(gefundene_KistenSchlitten["Kiste"] != "") & (gefundene_KistenSchlitten["Schlitte"] != "")] 
-    gefundene_KistenSchlitten = gefundene_KistenSchlitten.sort_values(by=["Kiste", "Schlitte"])
+    gefundene_KistenSchlitten = df_Cards[["Kiste", "Schlitten"]].drop_duplicates()
+    gefundene_KistenSchlitten = gefundene_KistenSchlitten[(gefundene_KistenSchlitten["Kiste"] != "") & (gefundene_KistenSchlitten["Schlitten"] != "")] 
+    gefundene_KistenSchlitten = gefundene_KistenSchlitten.sort_values(by=["Kiste", "Schlitten"])
 
-    st.write(gefundene_KistenSchlitten)
+    for _, row in gefundene_KistenSchlitten.iterrows():
+        kiste = row["Kiste"]
+        schlitte = row["Schlitten"]          
 
+        temp_df = pd.DataFrame(columns=df_Cards.columns) 
+
+        listKistenSchlitten = get_AllCardsInKisteAndSchlitten(kiste,schlitte,df_Cards)
+
+        for a in listKistenSchlitten:
+            zeile = df_Cards.iloc[int(a)]
+            temp_df = pd.concat([temp_df, zeile.to_frame().T], ignore_index=True)
+            
+        if(len(listKistenSchlitten) > 0):
+            st.write(f"Kiste: {kiste}  Schlitten: {schlitte}")
+            st.write(temp_df)
+ 
+    
     for i in bestellungen[spaltenname]:
-        st.title(f"Bestellung: {i}")
-        
+        st.title(f"Bestellung {i}")
         for _, row in gefundene_KistenSchlitten.iterrows():
-            kiste = row["Kiste"]
-            schlitte = row["Schlitte"]          
-
             temp_df = pd.DataFrame(columns=df_Cards.columns) 
-
-            listKistenSchlitten = get_AllCardsInKisteAndSchlitteWithBestellung(kiste,schlitte,df_Cards,i)
-
-            for a in listKistenSchlitten:
+            bestellungList = get_AllCardsFromBestellung(df_Cards, i)
+            
+            for a in bestellungList:
                 zeile = df_Cards.iloc[int(a)]
                 temp_df = pd.concat([temp_df, zeile.to_frame().T], ignore_index=True)
             
-            if(len(listKistenSchlitten) > 0):
-                st.write(f"Kiste: {kiste}  Schlitte: {schlitte}")
-                st.write(temp_df)
-
-
+        if(len(bestellungList) > 0):
+           st.write(temp_df)
 
 
 #streamlit run Magic_Card_Finder.py
-#cd C:\Users\ismae\Desktop\Magic
+#cd C:\Users\ismae\Desktop\Magic 
