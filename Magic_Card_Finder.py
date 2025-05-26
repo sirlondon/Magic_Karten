@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 from enum import Enum
 
-st.title("Magic Karten Finder")
 st.set_page_config(page_title="Magic Karten Finder", layout="wide")
+
+st.title("Magic Karten Finder")
 
 class Language(Enum):
     englisch = 1
