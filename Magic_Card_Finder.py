@@ -348,6 +348,8 @@ if expansion_csv:
 
     expansions = df_Expansion["Expansion"].drop_duplicates().dropna()
     
+    expansions = expansions.sort_values(key=lambda col: col.str.lower())
+
     language = df_Expansion["Language"].drop_duplicates().dropna()
 
     col1, col2, col3 = st.columns(3)
