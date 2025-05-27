@@ -178,7 +178,7 @@ def get_getColumnsFromDFWithList(list, df):
 
     return temp_df
     
-def mainSortFunction(df_Cards):
+def mainSortFunction(df_Cards, df_Expansion):
 
     df_Cards["Box"] = ""
     df_Cards["Fach"] = ""
@@ -335,30 +335,72 @@ def showBestellungenResults(list):
 
         st.dataframe(list[i]["df"].style.apply(highlight_row, axis=1))
 
-
 expansion_csv = st.file_uploader("Expansion- und Boxenliste hochladen", type="csv")
 sellingCards_csv = st.file_uploader("Gesuchte Karten hochladen", type="csv")
 
+
+if expansion_csv:
+    df_Expansion = pd.read_csv(expansion_csv, sep=";", encoding="utf-8")
+    
+    df_Expansion["Condition"] = df_Expansion["Condition"].fillna("NM")
+
+    conditions = df_Expansion["Condition"].drop_duplicates().dropna()
+
+    expansions = df_Expansion["Expansion"].drop_duplicates().dropna()
+    
+    language = df_Expansion["Language"].drop_duplicates().dropna()
+
+    col1, col2, col3 = st.columns(3)
+
+    condition_list = ["-- Alle --"] + conditions.tolist()
+    expansion_list = ["-- Alle --"] + expansions.tolist()
+    language_list = ["-- Alle --"] + language.tolist()
+
+    with col1:
+        auswahl1 = st.selectbox("Condition", condition_list)
+
+    with col2:
+        auswahl2 = st.selectbox("Expansion", expansion_list)
+
+    with col3:
+        auswahl3 = st.selectbox("Edition", language_list)
+
+    gefiltert = df_Expansion.copy()
+
+    if auswahl1 != "-- Alle --":
+       gefiltert = gefiltert[gefiltert["Condition"] == auswahl1]
+
+    if auswahl2 != "-- Alle --":
+      gefiltert = gefiltert[gefiltert["Expansion"] == auswahl2]
+
+    if auswahl3 != "-- Alle --":
+      gefiltert = gefiltert[gefiltert["Language"] == auswahl3]
+
+    st.write("Gefilterte Ergebnisse:", gefiltert)
+
+
 if sellingCards_csv and expansion_csv:
     df_Cards = pd.read_csv(sellingCards_csv, sep=";", encoding="utf-8")
-    df_Expansion = pd.read_csv(expansion_csv, sep=";", encoding="utf-8")      
 
-    if( "Magic the Gathering Einzelkarten" == df_Cards.columns[0]):
+    df_CardsCopy = df_Cards.copy()
+
+    if( "Magic the Gathering Einzelkarten" == df_CardsCopy.columns[0]):
         currentLanguage =  Language.deutsch
 
-    df_Cards = mainSortFunction(df_Cards)
+    df_CardsCopy = mainSortFunction(df_CardsCopy, df_Expansion)
 
     showErrorsAndHints()
      
-    showResult(df_Cards)
+    showResult(df_CardsCopy)
     
-    boxList = getCardsSortedToBoxes(df_Cards)
+    boxList = getCardsSortedToBoxes(df_CardsCopy)
 
     showBoxesResults(boxList)
 
-    bestellungenList = getCardsSortedToBestellungen(df_Cards)
+    bestellungenList = getCardsSortedToBestellungen(df_CardsCopy)
 
     showBestellungenResults(bestellungenList)
+
 
 #streamlit run Magic_Card_Finder.py
 #cd C:\Users\ismae\Desktop\Magic 
