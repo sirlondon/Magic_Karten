@@ -275,7 +275,7 @@ def getCardsSortedToBoxes(df_Cards):
 
 def showBoxesResults(boxList):
     for i in range(len(boxList)): 
-        st.markdown(f"<span style='font-size:30px;'>Box: {int(boxList[i]["Box"])} - {int(boxList[i]["Spalte"])}</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size:30px;'>Box: {int(boxList[i]['Box'])} - {int(boxList[i]['Spalte'])}</span>", unsafe_allow_html=True)
 
         st.write(boxList[i]["df"])
 
@@ -331,7 +331,7 @@ def showBestellungenResults(list):
     st.title("Bestellungen:")
 
     for i in range(len(list)): 
-        st.markdown(f"<span style='font-size:35px;'>Bestellung {int(list[i]["Bestellung"])} #{int(list[i]["OrderID"]):,}</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size:35px;'>Bestellung {int(list[i]['Bestellung'])} #{int(list[i]['OrderID']):,}</span>", unsafe_allow_html=True)
 
         st.dataframe(list[i]["df"].style.apply(highlight_row, axis=1))
 
