@@ -99,7 +99,7 @@ def get_Spalten(df_Expansion, cardNumber, cardName, cardCondition, possibleList)
         cardNumberInt = get_CardNumber(cardNumber)
         
         if(cardNumberInt == -1):
-            add_Hinweis(f"Die Karte <strong>{cardName}</strong> hat keine Kartennummer: <strong>{cardNumber}</strong> mögliche Boxen: <strong>{', '.join(map(str, get_IndexFromPossibleList(df_Expansion,possibleList, "Box")))}</strong> Fach: <strong>{', '.join(map(str, ([int(x) for x in get_IndexFromPossibleList(df_Expansion,possibleList, "Fach")])))}</strong>", "H1")
+            add_Hinweis(f"Die Karte <strong>{cardName}</strong> hat keine Kartennummer: <strong>{cardNumber}</strong> mögliche Boxen: <strong>{', '.join(map(str, get_IndexFromPossibleList(df_Expansion,possibleList, 'Box')))}</strong> Fach: <strong>{', '.join(map(str, ([int(x) for x in get_IndexFromPossibleList(df_Expansion,possibleList, 'Fach')])))}</strong>", "H1")
             hinweis = True
             return -1,-1,hinweis
 
@@ -110,7 +110,7 @@ def get_Spalten(df_Expansion, cardNumber, cardName, cardCondition, possibleList)
              if (condition[possibleList[i]] == cardCondition):
                 return spalten[possibleList[i]], box[possibleList[i]], hinweis
    
-    add_Hinweis(f"Keine genaue Box oder Fach konnte für die Karte <strong>{cardName}</strong> mit der Nummer: <strong>{cardNumber}</strong> gefunden werden mögliche Boxen: <strong>{', '.join(map(str, get_IndexFromPossibleList(df_Expansion,possibleList, "Box")))}</strong> Fach: <strong>{', '.join(map(str, ([int(x) for x in get_IndexFromPossibleList(df_Expansion,possibleList, "Fach")])))}</strong>", "H2")     
+    add_Hinweis(f"Keine genaue Box oder Fach konnte für die Karte <strong>{cardName}</strong> mit der Nummer: <strong>{cardNumber}</strong> gefunden werden mögliche Boxen: <strong>{', '.join(map(str, get_IndexFromPossibleList(df_Expansion,possibleList, 'Box')))}</strong> Fach: <strong>{', '.join(map(str, ([int(x) for x in get_IndexFromPossibleList(df_Expansion,possibleList, 'Fach')])))}</strong>", "H2")     
     hinweis = True
     return -1,-1, hinweis
 
