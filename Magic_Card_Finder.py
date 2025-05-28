@@ -295,18 +295,17 @@ def showBoxesGefunden(boxList):
 def getCardsSortedToBestellungen(df_Cards):
     spaltenname = get_CurrentLanguageRowText()
     
-    bestellungen = df_Cards[spaltenname].drop_duplicates()
-    bestellungen = bestellungen.sort_values()
-
-    orderID = df_Cards["Order ID"].drop_duplicates()
-    orderID = orderID.sort_values()
+    bestellungOrderSpalte = df_Cards[[spaltenname, "Order ID"]].drop_duplicates()
+    bestellungOrderSpalte[spaltenname] = pd.to_numeric(bestellungOrderSpalte[spaltenname], errors="coerce")
+    bestellungOrderSpalte["Order ID"] = pd.to_numeric(bestellungOrderSpalte["Order ID"], errors="coerce")
+    bestellungOrderSpalte = bestellungOrderSpalte.sort_values(by=[spaltenname,"Order ID"], ascending=True)
  
     returnList = []
 
-    for i in range(len(bestellungen)):
-        bestellungsID = bestellungen.iloc[i]
+    for i in range(len(bestellungOrderSpalte[spaltenname])):
+        bestellungsID = bestellungOrderSpalte[spaltenname].iloc[i]
       
-        order = orderID.iloc[i] 
+        order = bestellungOrderSpalte["Order ID"].iloc[i] 
 
         bestellungList = get_AllCardsFromBestellung(df_Cards, bestellungsID)
         
@@ -398,7 +397,10 @@ if expansion_csv:
        gefiltert = gefiltert[gefiltert["Condition"] == auswahl1]
 
     if auswahl2 != "-- Alle --":
-      gefiltert = gefiltert[gefiltert["Expansion"] == auswahl2]
+        if(englisch):
+            gefiltert = gefiltert[gefiltert["Expansion"] == auswahl2]
+        else:
+            gefiltert = gefiltert[gefiltert["Expansion deutsch"] == auswahl2]
 
     if auswahl3 != "-- Alle --":
       gefiltert = gefiltert[gefiltert["Language"] == auswahl3]
