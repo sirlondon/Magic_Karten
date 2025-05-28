@@ -203,7 +203,10 @@ def mainSortFunction(df_Cards, df_Expansion):
 
 def showResult(df_Cards):
     st.title("Resultat:")
-    st.write(df_Cards)
+
+    df = df_Cards.copy()
+    df.index = df.index + 1
+    st.dataframe(df.style.apply(highlight_row, axis=1))
     
     resultsCSV = df_Cards.to_csv(index=False, sep=";")
 
@@ -274,7 +277,9 @@ def showBoxesResults(boxList):
         boxList[i]["Gefunden"] = st.checkbox(f"Box {int(boxList[i]['Box'])} - {int(boxList[i]['Spalte'])} gefunden", value=False)
 
         if boxList[i]["Gefunden"] == False:
-            st.write(boxList[i]["df"])
+            df = boxList[i]["df"].copy()
+            df.index = df.index + 1
+            st.dataframe(df)
         
     return boxList
 
@@ -288,8 +293,10 @@ def showBoxesGefunden(boxList):
             )
         
         if boxList[i]["Gefunden"] == True:
-            st.write(boxList[i]["df"])
-        
+            df = boxList[i]["df"].copy()
+            df.index = df.index + 1
+            st.dataframe(df)
+                  
     return boxList
 
 def getCardsSortedToBestellungen(df_Cards):
@@ -347,7 +354,9 @@ def showBestellungenResults(list):
       
         st.markdown(f"<span style='font-size:35px;'>Bestellung {int(list[i]['Bestellung'])} [#{int(list[i]['OrderID']):,}]({linkText})</span>", unsafe_allow_html=True)
 
-        st.dataframe(list[i]["df"].style.apply(highlight_row, axis=1))
+        df = list[i]["df"].copy()
+        df.index = df.index + 1
+        st.dataframe(df.style.apply(highlight_row, axis=1))
 
 expansion_csv = st.file_uploader("Expansion- und Boxenliste hochladen", type="csv")
 sellingCards_csv = st.file_uploader("Gesuchte Karten hochladen", type="csv")
@@ -410,6 +419,10 @@ if expansion_csv:
 
 if sellingCards_csv and expansion_csv:
     df_Cards = pd.read_csv(sellingCards_csv, sep=";", encoding="utf-8")
+
+    df_Cards = df_Cards.sort_values(by=[get_CurrentLanguageRowText(),"Order ID"])
+
+    df_Cards = df_Cards.reset_index(drop=True)
 
     df_CardsCopy = df_Cards.copy()
 
