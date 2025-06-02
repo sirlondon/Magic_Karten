@@ -103,7 +103,10 @@ def get_Spalten(df_Expansion, cardNumber, cardName, cardCondition, possibleList)
             hinweis = True
             return -1,-1,hinweis
 
-        if pd.isna(condition.iloc[possibleList[i]]) or condition.iloc[possibleList[i]] == "":
+        if pd.isna(condition.iloc[possibleList[i]]) or condition.iloc[possibleList[i]] == "" or condition.iloc[possibleList[i]] == "NM":
+            if(cardNumberInt == 246):
+                st.write(possibleList)
+
             if (cardNumberInt >= int(spalteVon[possibleList[i]]) and cardNumberInt <= int(spalteBis[possibleList[i]])):
                 return spalten[possibleList[i]], box[possibleList[i]], hinweis
         else:
