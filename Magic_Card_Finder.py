@@ -5,6 +5,7 @@ from enum import Enum
 st.set_page_config(page_title="Magic Karten Finder", layout="wide")
 
 st.title("Magic Karten Finder")
+st.title("Hinweis Karten Ausgabe ist noch nicht fertig!!!")
 
 class Language(Enum):
     englisch = 1
@@ -104,9 +105,6 @@ def get_Spalten(df_Expansion, cardNumber, cardName, cardCondition, possibleList)
             return -1,-1,hinweis
 
         if pd.isna(condition.iloc[possibleList[i]]) or condition.iloc[possibleList[i]] == "" or condition.iloc[possibleList[i]] == "NM":
-            if(cardNumberInt == 246):
-                st.write(possibleList)
-
             if (cardNumberInt >= int(spalteVon[possibleList[i]]) and cardNumberInt <= int(spalteBis[possibleList[i]])):
                 return spalten[possibleList[i]], box[possibleList[i]], hinweis
         else:
@@ -168,7 +166,10 @@ def get_getColumnsFromDFWithList(list, df):
         temp_df = pd.concat([temp_df, zeile.to_frame().T], ignore_index=True)
 
     return temp_df
-    
+
+
+CardsWithHint = []
+
 def mainSortFunction(df_Cards, df_Expansion):
 
     df_Cards["Box"] = ""
@@ -193,11 +194,12 @@ def mainSortFunction(df_Cards, df_Expansion):
             sellingCardsFehlermeldung[i] = fehlerList[len(fehlerList) - 1]["code"]
 
         if len(possibleExpansionList) > 0:
-            spalte, box, hinweis =  get_Spalten(df_Expansion, sellingCardsCollectorsNumber[i], sellingCardsName[i],sellingCardsCondtion[i], possibleExpansionList)
-           
+            spalte, box, hinweis =  get_Spalten(df_Expansion, sellingCardsCollectorsNumber[i], sellingCardsName[i],sellingCardsCondtion[i], possibleExpansionList)              
+
             if(hinweis):
                sellingCardsHinweis[i] = hinweisList[len(hinweisList) - 1]["code"]
-           
+               CardsWithHint.append({"PossibleList": possibleExpansionList ,"ID": i})
+
             if(spalte != -1 and box != -1):
                 sellingCardsBox[i] = int(box)
                 sellingCardsSpalte[i] = int(spalte)
@@ -219,6 +221,28 @@ def showResult(df_Cards):
         file_name="Resultat_File.csv",
         mime="text/csv"
     )
+
+def showCardsWithHint(df_Cards, df_Expansion):
+    st.title("Hinweis Karten:")
+
+    sellingCardsName = df_Cards["Localized Article Name"]
+    spalten = df_Expansion["Fach"]   
+    box = df_Expansion["Box"]   
+
+    for i in range(len(CardsWithHint)): 
+        st.markdown(
+                f"<span style='font-size:30px;'>{sellingCardsName.loc[CardsWithHint[i]['ID']]}</span>",
+                unsafe_allow_html=True
+            )
+        
+        st.dataframe(df_Cards.iloc[[CardsWithHint[i]['ID']]])
+
+        posList = CardsWithHint[i]['PossibleList']
+
+        for a in range(len(posList)): 
+            st.write("Box: ",box[posList[a]], " Spalte: ",spalten[posList[a]] )
+
+
 
 def getCardsSortedToBoxes(df_Cards):
     gefundene_BoxSpalte = df_Cards[["Box", "Fach"]].drop_duplicates()
@@ -441,14 +465,14 @@ if sellingCards_csv and expansion_csv:
     boxList = getCardsSortedToBoxes(df_CardsCopy)
 
     boxList = showBoxesResults(boxList)
+    
+    showCardsWithHint(df_CardsCopy,df_Expansion)
 
     bestellungenList = getCardsSortedToBestellungen(df_CardsCopy)
 
     showBestellungenResults(bestellungenList)
   
     boxList = showBoxesGefunden(boxList)
-
-
 
 #streamlit run Magic_Card_Finder.py
 #cd C:\Users\ismae\Desktop\Magic 
