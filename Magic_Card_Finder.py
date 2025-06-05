@@ -5,7 +5,6 @@ from enum import Enum
 st.set_page_config(page_title="Magic Karten Finder", layout="wide")
 
 st.title("Magic Karten Finder")
-st.title("Hinweis Karten Ausgabe ist noch nicht fertig!!!")
 
 class Language(Enum):
     englisch = 1
@@ -211,7 +210,7 @@ def showResult(df_Cards):
 
     df = df_Cards.copy()
     df.index = df.index + 1
-    st.dataframe(df.style.apply(highlight_row, axis=1))
+    st.dataframe(df.style.apply(highlight_combined, axis=1))
     
     resultsCSV = df_Cards.to_csv(index=False, sep=";")
 
@@ -230,17 +229,28 @@ def showCardsWithHint(df_Cards, df_Expansion):
     box = df_Expansion["Box"]   
 
     for i in range(len(CardsWithHint)): 
-        st.markdown(
-                f"<span style='font-size:30px;'>{sellingCardsName.loc[CardsWithHint[i]['ID']]}</span>",
-                unsafe_allow_html=True
-            )
+        st.markdown(f"<span style='font-size:30px;'>{sellingCardsName.loc[CardsWithHint[i]['ID']]}</span>", unsafe_allow_html=True)
         
-        st.dataframe(df_Cards.iloc[[CardsWithHint[i]['ID']]])
+        temp_df = df_Cards.iloc[[CardsWithHint[i]['ID']]]
 
+        temp_df = ColumnOutputForBoxes(temp_df)
+            
         posList = CardsWithHint[i]['PossibleList']
+        
+        st.dataframe(temp_df)
 
-        for a in range(len(posList)): 
-            st.write("Box: ",box[posList[a]], " Spalte: ",spalten[posList[a]] )
+        st.markdown("<span style='font-size:25px;'>Mögliche Boxen:</span>", unsafe_allow_html=True)
+        
+        resultList = []
+        for a in range(len(posList)):
+            resultList.append({"Box":box[posList[a]], "Spalte": spalten[posList[a]]})
+        
+        df = pd.DataFrame(resultList)
+        df = df.drop_duplicates()
+        resultList = df.to_dict(orient="records")
+
+        for a in range(len(resultList)):
+            st.markdown(f"<span style='font-size:20px;'>Box:  {str(resultList[a]["Box"])} Spalte: {str(resultList[a]["Spalte"])}</span>",unsafe_allow_html=True) 
 
 
 
@@ -262,34 +272,39 @@ def getCardsSortedToBoxes(df_Cards):
         temp_df = get_getColumnsFromDFWithList(listBoxSpalte,df_Cards)
 
         if(len(listBoxSpalte) > 0): 
-            temp_df = temp_df.drop(temp_df.columns[6], axis=1)
-            temp_df = temp_df.drop(temp_df.columns[3], axis=1)
-            temp_df = temp_df.drop("Product ID", axis=1)
-            temp_df = temp_df.drop("Comments", axis=1)
-            temp_df = temp_df.drop("Order ID", axis=1)
-            temp_df = temp_df.drop("Rarity", axis=1)
-            temp_df = temp_df.drop("Box", axis=1)
-            temp_df = temp_df.drop("Fach", axis=1)
-            temp_df = temp_df.drop("Fehlermeldung", axis=1)
-            temp_df = temp_df.drop("Hinweis", axis=1)
-
-            spalteTemp = temp_df.pop("Collector Number")
-         
-            temp_df.insert(1,"Collector Number",spalteTemp)
-
-            spalteTemp = temp_df.pop(temp_df.columns[0])
-
-            temp_df["Bestellung"] = spalteTemp
-
-            spalteTemp = temp_df.pop("Expansion")
-
-            temp_df.insert(0,"Expansion",spalteTemp)
-
-            temp_df = temp_df.rename(columns={"-": "Stückzahl"})
+            temp_df = ColumnOutputForBoxes(temp_df)
             
             boxList.append({"Box": box ,"Spalte": spalte, "df": temp_df,"Gefunden": False})
 
     return boxList
+
+def ColumnOutputForBoxes(temp_df):
+    temp_df = temp_df.drop(temp_df.columns[6], axis=1)
+    temp_df = temp_df.drop(temp_df.columns[3], axis=1)
+    temp_df = temp_df.drop("Product ID", axis=1)
+    temp_df = temp_df.drop("Comments", axis=1)
+    temp_df = temp_df.drop("Order ID", axis=1)
+    temp_df = temp_df.drop("Rarity", axis=1)
+    temp_df = temp_df.drop("Box", axis=1)
+    temp_df = temp_df.drop("Fach", axis=1)
+    temp_df = temp_df.drop("Fehlermeldung", axis=1)
+    temp_df = temp_df.drop("Hinweis", axis=1)
+
+    spalteTemp = temp_df.pop("Collector Number")
+         
+    temp_df.insert(1,"Collector Number",spalteTemp)
+
+    spalteTemp = temp_df.pop(temp_df.columns[0])
+
+    temp_df["Bestellung"] = spalteTemp
+
+    spalteTemp = temp_df.pop("Expansion")
+
+    temp_df.insert(0,"Expansion",spalteTemp)
+
+    temp_df = temp_df.rename(columns={"-": "Stückzahl"})
+            
+    return temp_df
 
 def showBoxesResults(boxList):
     st.title("Verkaufte Karten:")
@@ -346,33 +361,43 @@ def getCardsSortedToBestellungen(df_Cards):
         temp_df = get_getColumnsFromDFWithList(bestellungList,df_Cards)
        
         if(len(bestellungList) > 0):
-            temp_df = temp_df.drop(temp_df.columns[6], axis=1)
-            temp_df = temp_df.drop(temp_df.columns[3], axis=1)
-            temp_df = temp_df.drop("Product ID", axis=1)
-            temp_df = temp_df.drop("Comments", axis=1)
-            temp_df = temp_df.drop("Order ID", axis=1)
-            temp_df = temp_df.drop("Rarity", axis=1)
-            temp_df = temp_df.drop("Collector Number", axis=1)
-            temp_df = temp_df.drop("Box", axis=1)
-            temp_df = temp_df.drop("Fach", axis=1)
-            temp_df = temp_df.drop("Hinweis", axis=1)
-            temp_df = temp_df.drop(temp_df.columns[0], axis=1)
-
-            spalteTemp = temp_df.pop("Expansion")
-
-            temp_df.insert(0,"Expansion",spalteTemp)
-
-            temp_df = temp_df.rename(columns={"-": "Stückzahl"})
+            temp_df = ColumnOutputForBestellungen(temp_df)
 
             returnList.append({"Bestellung": bestellungsID ,"OrderID": order, "df": temp_df})
     return returnList
 
-def highlight_row(row):
-    if row["Fehlermeldung"] != "-":
-        return ["color: red; font-weight: bold"] * len(row)
-    else:
-        return [""] * len(row)
-    
+def ColumnOutputForBestellungen(temp_df):
+    temp_df = temp_df.drop(temp_df.columns[6], axis=1)
+    temp_df = temp_df.drop(temp_df.columns[3], axis=1)
+    temp_df = temp_df.drop("Product ID", axis=1)
+    temp_df = temp_df.drop("Comments", axis=1)
+    temp_df = temp_df.drop("Order ID", axis=1)
+    temp_df = temp_df.drop("Rarity", axis=1)
+    temp_df = temp_df.drop("Collector Number", axis=1)
+    temp_df = temp_df.drop("Box", axis=1)
+    temp_df = temp_df.drop("Fach", axis=1)
+    temp_df = temp_df.drop(temp_df.columns[0], axis=1)
+
+    spalteTemp = temp_df.pop("Expansion")
+
+    temp_df.insert(0,"Expansion",spalteTemp)
+
+    temp_df = temp_df.rename(columns={"-": "Stückzahl"})
+
+    return temp_df
+
+def highlight_combined(row):
+    styles = []
+    for col in row.index:
+        style = ""
+        if row["Fehlermeldung"] != "-" and col in row.index:
+            style += "color: red; font-weight: bold;"
+        if row["Hinweis"] != "-" and col in row.index:
+            style += "color: orange; font-weight: bold;"  # Achtung: überschreibt evtl. rot
+        styles.append(style)
+    return styles
+
+       
 def showBestellungenResults(list):
     st.title("Bestellungen:")
 
@@ -383,7 +408,7 @@ def showBestellungenResults(list):
 
         df = list[i]["df"].copy()
         df.index = df.index + 1
-        st.dataframe(df.style.apply(highlight_row, axis=1))
+        st.dataframe(df.style.apply(highlight_combined, axis=1))
 
 expansion_csv = st.file_uploader("Expansion- und Boxenliste hochladen", type="csv")
 sellingCards_csv = st.file_uploader("Gesuchte Karten hochladen", type="csv")
