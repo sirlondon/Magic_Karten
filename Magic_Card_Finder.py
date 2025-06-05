@@ -250,7 +250,7 @@ def showCardsWithHint(df_Cards, df_Expansion):
         resultList = df.to_dict(orient="records")
 
         for a in range(len(resultList)):
-            st.markdown(f"<span style='font-size:20px;'>Box:  {str(resultList[a]["Box"])} Spalte: {str(resultList[a]["Spalte"])}</span>",unsafe_allow_html=True) 
+            st.markdown(f"<span style='font-size:20px;'>Box:  {str(resultList[a]['Box'])} Spalte: {str(resultList[a]['Spalte'])}</span>",unsafe_allow_html=True) 
 
 
 
