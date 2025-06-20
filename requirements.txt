@@ -1,1 +1,3 @@
 selenium
+reportlab
+PyPDF2
