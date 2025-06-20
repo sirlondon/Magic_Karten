@@ -1,3 +1,4 @@
 selenium
 reportlab
 PyPDF2
+webdriver-manager
