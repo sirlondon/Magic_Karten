@@ -589,16 +589,17 @@ def getData(list, i):
     options.add_argument('--disable-dev-shm-usage')
   
     driver = webdriver.Chrome(options=options)
-        
-    url = order_urls[i]
+    driver.get("https://www.google.com")
+    driver.quit()    
+    #url = order_urls[i]
 
-    resultAddress = getAddress(url, driver)
-    resultPayment = getPayment(url, driver)
-    resultShipping = getShipping(url, driver)
+ #   resultAddress = getAddress(url, driver)
+  #  resultPayment = getPayment(url, driver)
+  #  resultShipping = getShipping(url, driver)
 
-    driver.quit()
+  #  driver.quit()
 
-    return resultAddress, resultPayment, resultShipping
+  #  return resultAddress, resultPayment, resultShipping
 
 def draw_table(c, data, x_start=45, y_start=500, row_height=14):
     for row_num, row in enumerate(data):
