@@ -9,6 +9,8 @@ from reportlab.pdfgen import canvas # type: ignore
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle # type: ignore
 from reportlab.lib import colors # type: ignore # type: ignore
 from PyPDF2 import PdfMerger # type: ignore
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager # type: ignore
 
 st.set_page_config(page_title="Magic Karten Finder", layout="wide")
 
@@ -584,22 +586,22 @@ def getData(list, i):
  
     # Selenium setup
     options = Options()
-    options.add_argument('--headless')  # run headless if needed
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-  
-    driver = webdriver.Chrome(options=options)
-    driver.get("https://www.google.com")
-    driver.quit()    
-    #url = order_urls[i]
+    options.headless = False  # or True if no GUI available
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+ 
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
- #   resultAddress = getAddress(url, driver)
-  #  resultPayment = getPayment(url, driver)
-  #  resultShipping = getShipping(url, driver)
+    url = order_urls[i]
 
-  #  driver.quit()
+    resultAddress = getAddress(url, driver)
+    resultPayment = getPayment(url, driver)
+    resultShipping = getShipping(url, driver)
 
-  #  return resultAddress, resultPayment, resultShipping
+    driver.quit()
+
+    return resultAddress, resultPayment, resultShipping
 
 def draw_table(c, data, x_start=45, y_start=500, row_height=14):
     for row_num, row in enumerate(data):
