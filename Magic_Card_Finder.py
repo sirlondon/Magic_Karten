@@ -12,6 +12,7 @@ from PyPDF2 import PdfMerger # type: ignore
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager # type: ignore
 import os
+from webdriver_manager.core.os_manager import ChromeType # type: ignore
 
 # Nur falls du in Streamlit Cloud bist
 os.system("apt-get update")
@@ -588,18 +589,25 @@ def getAddress(url, driver):
     except:
         return {"Fehler": "❌ Adresse nicht gefunden"}
 
+def get_driver():
+    return webdriver.Chrome(
+        service=Service(
+            ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+        ),
+        options=Options,
+    )
+
 def getData(list, i):
     order_urls = getAllLinks(list)
  
     # Selenium setup
     options = Options()
-    options.headless = False  # or True if no GUI available
+    options.headless = True 
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.binary_location = '/usr/bin/google-chrome'
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver =  webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options) #webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     url = order_urls[i]
 
