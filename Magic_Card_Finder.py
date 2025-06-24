@@ -584,9 +584,12 @@ def getData(list, i):
  
     # Selenium setup
     options = Options()
-    options.headless = False  # Sichtbares Fenster für Login
+    options.add_argument('--headless')  # run headless if needed
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+  
     driver = webdriver.Chrome(options=options)
-
+        
     url = order_urls[i]
 
     resultAddress = getAddress(url, driver)
