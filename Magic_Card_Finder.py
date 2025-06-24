@@ -11,6 +11,13 @@ from reportlab.lib import colors # type: ignore # type: ignore
 from PyPDF2 import PdfMerger # type: ignore
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager # type: ignore
+import os
+
+# Nur falls du in Streamlit Cloud bist
+os.system("apt-get update")
+os.system("apt-get install -y wget unzip xvfb libxi6 libgconf-2-4")
+os.system("wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb")
+os.system("dpkg -i google-chrome-stable_current_amd64.deb || apt-get -fy install")
 
 st.set_page_config(page_title="Magic Karten Finder", layout="wide")
 
@@ -793,4 +800,4 @@ if sellingCards_csv and expansion_csv:
     showCardsWithHintFound(df_CardsCopy,df_Expansion)
 #streamlit run Magic_Card_Finder.py
 #cd C:\Users\ismae\Desktop\Magic 
-# 11enmoney4Us!
+#   
